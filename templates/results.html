@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NutriLens — Your Results</title>
+    <meta name="description" content="Your personalized nutrition deficiency risk analysis from NutriLens.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="custom-cursor"></div>
+
+    <header class="container">
+        <nav class="navbar">
+            <a href="/" class="logo">
+                <span class="logo-icon">🥗</span>
+                <span>NutriLens</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">← Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="results-header container">
+        <h2>Your Nutrition <span style="color: var(--accent-green);">Analysis</span></h2>
+
+        <div class="score-ring" style="color: {{ overall_color }}; border-color: {{ overall_color }};">
+            <span class="score-value" style="color: {{ overall_color }};">{{ overall_score }}%</span>
+            <span class="score-label">Risk Score</span>
+        </div>
+
+        <p style="font-size: 1.1rem; margin-bottom: 8px;">
+            Overall Risk Level:
+            <span class="risk-badge {{ overall_risk | lower }}" style="font-size: 0.9rem;">
+                {{ overall_risk }}
+            </span>
+        </p>
+
+        <div class="risk-summary">
+            <div class="risk-count">
+                <span class="risk-dot" style="background: var(--risk-high);"></span>
+                <span>{{ risk_counts.HIGH }} HIGH risk</span>
+            </div>
+            <div class="risk-count">
+                <span class="risk-dot" style="background: var(--risk-moderate);"></span>
+                <span>{{ risk_counts.MODERATE }} MODERATE risk</span>
+            </div>
+            <div class="risk-count">
+                <span class="risk-dot" style="background: var(--risk-low);"></span>
+                <span>{{ risk_counts.LOW }} LOW risk</span>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="/" class="btn btn-secondary">🔄 Re-analyze</a>
+        </div>
+    </section>
+
+    <section class="section container">
+        <div class="section-title">
+            <h2>Nutrient <span>Breakdown</span></h2>
+            <p>Detailed analysis for each nutrient</p>
+        </div>
+
+        <div class="results-grid">
+            {% for r in results %}
+            <div class="card nutrient-card">
+
+                <div class="nutrient-card-header">
+                    <div class="nutrient-name">
+                        <span class="icon">{{ r.icon }}</span>
+                        <h3>{{ r.name }}</h3>
+                    </div>
+                    <span class="risk-badge {{ r.risk_level | lower }}">{{ r.risk_level }}</span>
+                </div>
+
+                <div class="intake-vs-rda">
+                    <strong>{{ r.intake }}{{ r.unit }}</strong> / {{ r.rda }}{{ r.unit }} RDA
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar"
+                         data-width="{{ r.intake_pct }}"
+                         style="background-color: {{ r.risk_color }};">
+                    </div>
+                </div>
+
+                <div class="probability-value" style="color: {{ r.risk_color }};">
+                    {{ r.probability }}%
+                </div>
+                <div class="probability-label">Deficiency Probability</div>
+
+                <div class="nutrient-message">{{ r.message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="section container chart-section">
+        <div class="section-title">
+            <h2>Visual <span>Analysis</span></h2>
+            <p>Interactive charts comparing your intake against recommended values</p>
+        </div>
+
+        <div class="charts-row">
+
+            <div class="chart-container">
+                <h3 class="mb-2">Your Intake vs Recommended Daily Allowance</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="mb-2">Deficiency Probability Radar</h3>
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section class="section container insights-section">
+        <div class="section-title">
+            <h2>Personalized <span>Insights</span></h2>
+            <p>Smart recommendations based on your analysis</p>
+        </div>
+
+        {% for insight in insights %}
+        <div class="insight-item" style="border-left-color: {{ insight.color }};">
+            <span class="insight-icon">{{ insight.icon }}</span>
+            <span class="insight-text">{{ insight.text }}</span>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% set at_risk = results | selectattr('risk_level', 'ne', 'LOW') | list %}
+    {% if at_risk %}
+    <section class="section container suggestions-section">
+        <div class="section-title">
+            <h2>Food <span>Suggestions</span></h2>
+            <p>Add these foods to your diet to improve your nutrient intake</p>
+        </div>
+
+        <div class="grid-2">
+            {% for r in at_risk %}
+            <div class="card suggestion-card">
+                <h3>
+                    <span>{{ r.icon }}</span>
+                    {{ r.name }}
+                    <span class="risk-badge {{ r.risk_level | lower }}">{{ r.risk_level }}</span>
+                </h3>
+                <div class="food-tags">
+                    {% for food in r.suggestions %}
+                    <span class="food-tag">{{ food }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="footer container">
+        <p>Built with 💚 by <span>NutriLens</span> — Powered by SciPy & Flask</p>
+    </footer>
+
+    <script>
+        // Jinja2 injects our Python data as a JSON array.
+        // JavaScript parses it instantly into a native JS array of objects.
+        const nutrientData = {{ results | tojson }};
+    </script>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

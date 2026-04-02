@@ -1,0 +1,22 @@
+# ============================================================
+# requirements.txt — Python Package Manifest
+# ============================================================
+#
+# WHAT IS THIS FILE?
+# A plain-text list of Python packages (libraries) our project
+# needs. The tool "pip" reads this file and installs everything
+# listed.  Think of it as a shopping list for software.
+#
+# WHAT IS pip?
+# pip = "Pip Installs Packages."  It's Python's built-in
+# package manager — the program that downloads and installs
+# third-party libraries from the internet (PyPI repository).
+#
+# HOW TO USE:
+#   pip install -r requirements.txt
+# The -r flag says "read from this file."
+# ============================================================
+
+flask       # Lightweight web framework — handles routes & templates
+numpy       # Numerical computing — efficient math on arrays
+scipy       # Scientific computing — provides norm.cdf for probability
