@@ -170,6 +170,3 @@ nutrilens/
 
 NutriLens is an academic project and a principled statistical approximation. It is **not a clinically verified diagnostic tool** and should not replace professional medical or dietary advice. The Normal Distribution model with a 15% coefficient of variation is consistent with nutritional epidemiology literature and produces qualitatively valid risk estimates, but results are for educational and exploratory purposes only.
 
----
-
-*Confidential — For Academic Submission Only | April 2026*
