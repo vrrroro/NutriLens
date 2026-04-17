@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLens — Smart Nutrition Risk Detection</title>
+    <meta name="description"
+        content="NutriLens uses statistical probability modeling to detect your nutritional deficiency risks based on your meals.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div id="custom-cursor"></div>
+
+    <header class="container">
+        <nav class="navbar">
+            <div class="logo">
+                <span class="logo-icon">🥗</span>
+                <span>NutriLens</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#tracker">Tracker</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero container">
+        <h1 class="glitch" data-text="NutriLens">NutriLens</h1>
+        <p class="tagline">Food-Based Nutrition Risk Estimator</p>
+        <p class="description">
+            Track your meals and let NutriLens automatically calculate your deficiency risks across all macro & micro
+            nutrients using advanced probability modeling.
+        </p>
+        <a href="#tracker" class="btn btn-primary btn-pulse">
+            <span class="btn-glow"></span>
+            🍽️ Start Tracking
+        </a>
+    </section>
+
+    <section id="how-it-works" class="section container">
+        <div class="section-title">
+            <h2>How <span>NutriLens</span> Works</h2>
+            <p>Three simple steps to understand your nutrition health</p>
+        </div>
+        <div class="steps-grid">
+            <div class="card step-card">
+                <span class="card-icon">👤</span>
+                <span class="step-number">1</span>
+                <h3>Select Profile</h3>
+                <p>Choose your gender to set accurate baseline caloric & nutrient RDAs.</p>
+            </div>
+            <div class="card step-card">
+                <span class="card-icon">🍎</span>
+                <span class="step-number">2</span>
+                <h3>Log Your Meals</h3>
+                <p>Add what you ate for Breakfast, Lunch, Dinner, or Snacks from our precise database.</p>
+            </div>
+            <div class="card step-card">
+                <span class="card-icon">📊</span>
+                <span class="step-number">3</span>
+                <h3>View Analysis</h3>
+                <p>Get personalized deficiency risk assessments powered by SciPy statistical modeling.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="tracker" class="section container">
+        <div class="form-section">
+            <div class="form-header">
+                <h2>Daily <span>Food Tracker</span></h2>
+                <p>Build your daily intake profile step-by-step.</p>
+            </div>
+
+            <!-- STEP 1: GENDER SELECTION -->
+            <div id="step-gender" class="tracker-step active-step">
+                <h3 class="step-title">1. Select Your Biological Profile</h3>
+                <div class="gender-selection">
+                    <button type="button" class="btn btn-secondary gender-btn" data-gender="Male">👨 Male (2500
+                        kcal)</button>
+                    <button type="button" class="btn btn-secondary gender-btn" data-gender="Female">👩 Female (2000
+                        kcal)</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: TRACKER DASHBOARD (Meals & Foods) -->
+            <div id="step-tracker" class="tracker-step hidden-step">
+                <h3 class="step-title">2. Build Your Meals <span id="current-gender-badge" class="badge"></span></h3>
+
+                <div class="tracker-dashboard">
+                    <!-- Current List of Added Foods -->
+                    <div class="added-foods-container" id="added-foods-container">
+                        <h4>Your Intake So Far:</h4>
+                        <ul id="foods-list" class="foods-list">
+                            <!-- JS injected elements -->
+                        </ul>
+                    </div>
+
+                    <!-- Flow Control Buttons -->
+                    <div class="tracker-actions">
+                        <button type="button" id="btn-add-meal" class="btn btn-secondary">+ Add Meal</button>
+                        <button type="button" id="btn-demo-fill" class="btn btn-ghost">⚡ Quick Fill Demo</button>
+
+                        <!-- The hidden form -->
+                        <form id="nutrition-form" method="POST" action="/analyze">
+                            <input type="hidden" name="payload" id="payload">
+                            <button type="submit" id="btn-submit-analysis" class="btn btn-primary"
+                                style="display:none;">
+                                🔍 Analyze My Nutrition
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Meal Type Selection Modal -->
+                    <div id="meal-type-selection" class="selection-box hidden">
+                        <h4>Select Meal Time:</h4>
+                        <div class="meal-grid">
+                            <button class="meal-btn" data-meal="Breakfast">🥞 Breakfast</button>
+                            <button class="meal-btn" data-meal="Lunch">🍛 Lunch</button>
+                            <button class="meal-btn" data-meal="Snacks">🥨 Snacks</button>
+                            <button class="meal-btn" data-meal="Dinner">🍲 Dinner</button>
+                        </div>
+                    </div>
+
+                    <!-- Food Selection Modal -->
+                    <div id="food-selection" class="selection-box hidden">
+                        <h4>Select Food for <span id="selected-meal-label" style="color:var(--accent-green);"></span>:
+                        </h4>
+                        <div class="food-grid" id="food-grid">
+                            {% for name, nutrients in food_db.items() %}
+                            <button class="food-btn" data-food="{{ name }}">{{ name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Quantity Input Modal -->
+                    <div id="quantity-input" class="selection-box hidden">
+                        <h4>Select Quantity for <span id="selected-food-label"
+                                style="color:var(--accent-green);"></span>:</h4>
+                        <div class="quantity-controls">
+                            <input type="number" id="food-quantity" min="1" placeholder="Amount" class="quant-input">
+                            <select id="food-unit" class="quant-select">
+                                <option value="g">grams (g)</option>
+                                <option value="ml">milliliters (ml)</option>
+                            </select>
+                        </div>
+                        <div class="quantity-actions mt-3">
+                            <button type="button" id="btn-confirm-food" class="btn btn-primary">➕ Add to Meal</button>
+                            <button type="button" id="btn-cancel-food" class="btn btn-ghost">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer container">
+        <p>Built with 💚 by <span>Rohit</span> — Powered by SciPy & Flask</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
